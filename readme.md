@@ -24,6 +24,7 @@
 - [🪄 Usage](#-usage)
 - [🎵 Playlist Downloads](#-playlist-downloads)
 - [📺 Channel Downloads](#-channel-downloads)
+- [📱 iPhone / iPad (a-Shell)](#-iphone--ipad-a-shell)
 - [🧹 Clean Up Incomplete Downloads](#-optional-clean-up-incomplete-downloads)
 - [📦 Full Setup (for developers)](#-full-setup-for-developers)
 - [🛠️ Advanced Options](#-advanced-options)
@@ -202,6 +203,26 @@ downloads/
 │   └── 20240805-Tech News Update.mp4
 └── Individual Video.mp4
 ```
+
+## 📱 iPhone / iPad (a-Shell)
+
+`download_ios.py` runs inside the free [a-Shell](https://apps.apple.com/app/id1473805438) app.
+
+1. Install **a-Shell** from the App Store, open it and run:
+   ```bash
+   pip install -U yt-dlp
+   ```
+2. Copy `download_ios.py` into a-Shell's folder (Files app → On My iPhone → a-Shell), or download it with `curl -O <raw file URL>`.
+3. Copy a YouTube link, then run:
+   ```bash
+   python3 download_ios.py
+   ```
+   It offers the copied link, asks video or audio, and saves to **Files → On My iPhone → a-Shell → YouTube**.
+
+Options (handy from Apple Shortcuts): `python3 download_ios.py [--audio | --mp3] [--res 720] URL`
+
+> [!Note]
+> Videos are saved as H.264 MP4 so they play on iPhone, which caps quality at 1080p. Deno is not available on iOS, so some videos may only offer lower quality.
 
 ## 🧹 Optional: Clean Up Incomplete Downloads
 
