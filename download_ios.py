@@ -1,5 +1,6 @@
 """
 iPhone / iPad version of download.py, made to run inside the a-Shell app.
+Works with YouTube and any other site yt-dlp supports (TikTok, Instagram, Vimeo, X, ...).
 
 Differences from download.py:
   * Saves to ~/Documents/YouTube, which shows up in the Files app under "a-Shell".
@@ -37,18 +38,24 @@ RETRY_DELAY = 2
 DEFAULT_OUTPUT = os.path.join(os.path.expanduser("~"), "Documents", "YouTube")
 RESOLUTIONS = {"1": None, "2": 1080, "3": 720, "4": 480, "5": 360}
 
-URL_PATTERN = re.compile(
-    r"https?://(?:www\.|m\.|music\.)?(?:youtube\.com|youtu\.be)/\S+", re.IGNORECASE)
-VALID_PATH_MARKERS = ("/watch?", "/playlist?", "/shorts/", "/live/",
-                      "/@", "/channel/", "/c/", "/user/", "youtu.be/")
+URL_PATTERN = re.compile(r"https?://[^\s<>\"']+", re.IGNORECASE)
+YOUTUBE_HOSTS = ("youtube.com", "youtu.be")
+YOUTUBE_PATH_MARKERS = ("/watch?", "/playlist?", "/shorts/", "/live/",
+                        "/@", "/channel/", "/c/", "/user/", "youtu.be/")
 
 
 def parse_urls(text: str) -> List[str]:
-    """Pull every YouTube URL out of free text (shared text often has extra words)."""
+    """Pull every link out of free text (shared text often has extra words).
+
+    Any site yt-dlp supports is accepted (TikTok, Instagram, Vimeo, X, ...).
+    YouTube links must point at a video, playlist or channel.
+    """
     found = []
     for url in URL_PATTERN.findall(text or ""):
-        url = url.rstrip(".,;)]}>\"'")
-        if any(m in url for m in VALID_PATH_MARKERS) and url not in found:
+        url = url.rstrip(".,;)]}>")
+        if any(h in url.lower() for h in YOUTUBE_HOSTS) and not any(m in url for m in YOUTUBE_PATH_MARKERS):
+            continue
+        if url not in found:
             found.append(url)
     return found
 
@@ -104,7 +111,7 @@ def build_options(output_path: str, audio_only: bool, mp3: bool,
         # Only has an effect if a JavaScript runtime is available.
         "remote_components": ["ejs:github"],
         "outtmpl": {
-            "default": os.path.join(output_path, "%(title)s [%(id)s].%(ext)s"),
+            "default": os.path.join(output_path, "%(title).100B [%(id)s].%(ext)s"),
             "pl_video": os.path.join(
                 output_path, "%(playlist_title)s",
                 "%(playlist_index)03d - %(title)s [%(id)s].%(ext)s"),
@@ -178,13 +185,13 @@ def interactive_urls() -> List[str]:
             print(f"   • {u}")
         if ask("Use these? [Y/n]: ", "y").lower().startswith("y"):
             return clip
-    text = ask("Paste YouTube URL(s): ")
+    text = ask("Paste video link(s): ")
     return parse_urls(text)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="YouTube downloader for a-Shell on iOS")
-    parser.add_argument("urls", nargs="*", help="YouTube URLs (videos, playlists, channels, shorts)")
+    parser = argparse.ArgumentParser(description="Video downloader (YouTube + other yt-dlp sites) for a-Shell on iOS")
+    parser.add_argument("urls", nargs="*", help="video/playlist/channel URLs from YouTube or other supported sites")
     parser.add_argument("--audio", action="store_true", help="audio only (M4A)")
     parser.add_argument("--mp3", action="store_true", help="audio only, converted to MP3")
     parser.add_argument("--res", type=int, choices=[1080, 720, 480, 360], help="max video height")
@@ -199,7 +206,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     if not urls and args.urls and args.ask:
         urls = interactive_urls()  # shared text had no link: fall back to clipboard/prompt
     if not urls:
-        print("❌ No valid YouTube URLs found.")
+        print("❌ No valid video links found.")
         return 1
 
     if args.list_formats:
