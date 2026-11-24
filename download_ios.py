@@ -10,6 +10,7 @@ Differences from download.py:
         python3 download_ios.py "https://youtu.be/..."
         python3 download_ios.py --audio "https://youtu.be/..."
         python3 download_ios.py --res 720 "https://youtu.be/..."
+        python3 download_ios.py --ask "https://youtu.be/..."   (shows the menu)
   * With no URL, it offers the clipboard contents, then asks for input.
 
 Setup in a-Shell:
@@ -189,10 +190,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--res", type=int, choices=[1080, 720, 480, 360], help="max video height")
     parser.add_argument("--out", default=DEFAULT_OUTPUT, help=f"output folder (default: {DEFAULT_OUTPUT})")
     parser.add_argument("--list-formats", action="store_true", help="show available formats and exit")
+    parser.add_argument("--ask", action="store_true",
+                        help="ask video/audio + quality even when URLs are given (for Shortcuts)")
     args = parser.parse_args(argv)
 
-    interactive = not args.urls
+    interactive = not args.urls or args.ask
     urls = parse_urls(" ".join(args.urls)) if args.urls else interactive_urls()
+    if not urls and args.urls and args.ask:
+        urls = interactive_urls()  # shared text had no link: fall back to clipboard/prompt
     if not urls:
         print("❌ No valid YouTube URLs found.")
         return 1
