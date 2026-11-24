@@ -221,6 +221,19 @@ downloads/
 
 Options (handy from Apple Shortcuts): `python3 download_ios.py [--audio | --mp3] [--res 720] URL`
 
+**One-tap start with Apple Shortcuts** (works from the Share button in YouTube/Safari, or a Home Screen icon):
+
+1. Shortcuts app → **+** → name it **YouTube Download**.
+2. Add **Receive URLs and Text from Share Sheet**; set *If there's no input* → **Get Clipboard**.
+3. Add **Choose from Menu** with items: `Best video`, `720p video`, `Audio (M4A)`, `Audio (MP3)`.
+4. Under each item add a **Text** action: (empty), `--res 720`, `--audio`, `--mp3`.
+5. After the menu, add a-Shell's **Execute Command** and set it to run **In App** (Python only runs in the app):
+   ```
+   python3 ~/Documents/download_ios.py Menu Result "Shortcut Input"
+   ```
+   (insert *Menu Result* and *Shortcut Input* as variables; keep the quotes around Shortcut Input).
+6. Shortcut settings (ⓘ) → turn on **Show in Share Sheet**; optionally **Add to Home Screen**.
+
 > [!Note]
 > Videos are saved as H.264 MP4 so they play on iPhone, which caps quality at 1080p. Deno is not available on iOS, so some videos may only offer lower quality.
 
